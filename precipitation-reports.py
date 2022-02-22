@@ -338,7 +338,7 @@ def display_coverage():
                 params = MISSING_ITEM_URLS.get(category, None)
                 if params:
                     path=f"members/{member_id}/works"
-                    params = params | {'sample': 100, 'select':'DOI'}     
+                    params = {**params , **{'sample': 100, 'select':'DOI'}}     
                     url = Request('GET',f"{API_URI}/{path}", params=params).prepare().url
                     st.markdown(f"[Show sample DOIs that are missing {category}]({url})")
                 
