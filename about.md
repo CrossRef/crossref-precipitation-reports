@@ -16,6 +16,13 @@ Because the Crossref Labs keeps gathering new and interesting data that we want 
 
 This will also allow us to prototype things that may make it into Participation Reports.
 
-### I hate it. Why doesn't it do X?
+And we've always been curious about how much we might be able to build using some of the incredible tools that have emerged for data scientists.
 
-We're glad you asked. The [source is available in GitLab]() under an MIT Open Source License. We even built it with an eye toward extension. It uses standard libraries like [pandas](https://pandas.pydata.org/) and [Plotly](https://plotly.com/) to do most of its work. And the enitre page is driven by the most excellent [Streamlit](https://streamlit.io/). We look forward to your pull requests!
+### Why doesn't it do X?
+
+We're glad you asked. The [source is available in GitLab](https://gitlab.com/crossref/crossref-precipitation-reports) under an MIT Open Source License. We even built it with an eye toward extension. It uses standard libraries like [pandas](https://pandas.pydata.org/) and [Plotly](https://plotly.com/) to do most of its work. And the enitre page is driven by the most excellent [Streamlit](https://streamlit.io/). We look forward to your merge requests!
+
+### How often is the data updated?
+
+Every night. If there is demand, we can do this more frequently.
+
