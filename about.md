@@ -1,6 +1,6 @@
 ## Crossref Precipitation  Reports
 
-It's raining metdata! Hallelujah!
+It's raining metadata! Hallelujah!
 
 ### Warnings, Caveats and Weasel Words
 
@@ -25,4 +25,12 @@ We're glad you asked. The [source is available in GitLab](https://gitlab.com/cro
 ### How often is the data updated?
 
 Every night. If there is demand, we can do this more frequently.
+
+### Can you move the widgets 12 pixels to the right?
+
+Probably not. Streamlit is fantastic, but it doesn't give you fine-grained control over all UI elements.
+
+### I see that you are using dataframes and plotly in a very eccentric fasion. Are you an idiot?
+
+Indubitably.
 
