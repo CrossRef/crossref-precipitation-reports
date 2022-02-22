@@ -296,7 +296,8 @@ def show_sample(member_id, category):
 def get_sample(member_id, category):
     with st.spinner("Getting sample of non-conforming DOIs"):
         path=f"members/{member_id}/works"
-        if params := MISSING_ITEM_URLS.get(category, None):
+        params = MISSING_ITEM_URLS.get(category, None)
+        if params:
             params = params | {'sample': 100, 'select':'DOI'}     
             res = get(f"{API_URI}/{path}", params=params, headers=HEADERS).json()
             return json.dumps(res)
@@ -334,7 +335,8 @@ def display_coverage():
             # debug exceptions
             if st.session_state.show_example_links:
                 member_id = member_name_to_id(member_name)
-                if params := MISSING_ITEM_URLS.get(category, None):
+                params = MISSING_ITEM_URLS.get(category, None)
+                if params:
                     path=f"members/{member_id}/works"
                     params = params | {'sample': 100, 'select':'DOI'}     
                     url = Request('GET',f"{API_URI}/{path}", params=params).prepare().url
