@@ -12,14 +12,18 @@ import plotly.graph_objects as go
 import arrow
 import streamlit as st
 from requests import Request, get
-from settings import API_URI, COUNTS_COL_PREFIX, COVERAGE_CATEGORIES, CR_PRIMARY_COLORS, HEADERS
+from settings import (
+    API_URI,
+    COUNTS_COL_PREFIX,
+    COVERAGE_CATEGORIES,
+    CR_PRIMARY_COLORS,
+    HEADERS,
+)
 from missing_items_urls import MISSING_ITEM_URLS
 
 
 def period_dates():
-    now = arrow.utcnow()
     start_of_this_year = arrow.utcnow().floor("year")
-    # end_of_last_year = now.shift(years=-1).ceil('year')
 
     start_of_current = start_of_this_year.shift(years=-2)
     end_of_backfile = start_of_current.shift(days=-1)
@@ -244,11 +248,14 @@ def total_dois(member_id):
         "counts-total-dois"
     ]
 
+
 def dois_by_issued_year(member_id):
-    val = json.loads(summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
-        "breakdowns-dois-by-issued-year"
-    ])
-    return {'years': [item[0] for item in val], 'counts': [item[1] for item in val] }
+    val = json.loads(
+        summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
+            "breakdowns-dois-by-issued-year"
+        ]
+    )
+    return {"years": [item[0] for item in val], "counts": [item[1] for item in val]}
 
 
 def display_overview():
@@ -258,12 +265,20 @@ def display_overview():
         with st.expander(label=f"{member_name}"):
             member_vitals(member_id)
 
+
 def publication_history_chart(member_id):
     data = dois_by_issued_year(member_id)
     chart_df = pd.DataFrame(data)
-    d_fig = px.bar(chart_df, x='years', y='counts', color_discrete_sequence=['#000000'], title="Publications per year")
+    d_fig = px.bar(
+        chart_df,
+        x="years",
+        y="counts",
+        color_discrete_sequence=["#000000"],
+        title="Publications per year",
+    )
     d_fig.update_traces(marker_color="#3eb1c8")
     return d_fig
+
 
 def member_vitals(member_id):
     st.markdown(f"**Date joined:** {date_joined(member_id)}")
@@ -274,7 +289,6 @@ def member_vitals(member_id):
     st.markdown(f"**Backfile DOIs:** {backfile_dois(member_id):,}")
     st.markdown(f"**Total DOIs:** {total_dois(member_id):,}")
     st.write(publication_history_chart(member_id))
-   
 
 
 def title_details(member_name, category):
@@ -292,17 +306,19 @@ def title_details(member_name, category):
 def show_sample(member_id, category):
     st.write("Downloading sample")
 
+
 @st.experimental_memo
 def get_sample(member_id, category):
     with st.spinner("Getting sample of non-conforming DOIs"):
-        path=f"members/{member_id}/works"
+        path = f"members/{member_id}/works"
         params = MISSING_ITEM_URLS.get(category, None)
         if params:
-            params = params | {'sample': 100, 'select':'DOI'}     
+            params = params | {"sample": 100, "select": "DOI"}
             res = get(f"{API_URI}/{path}", params=params, headers=HEADERS).json()
             return json.dumps(res)
-       
+
     return None
+
 
 def display_coverage():
     st.header("Coverage")
@@ -311,7 +327,7 @@ def display_coverage():
     )
 
     for category, category_lable in COVERAGE_CATEGORIES.items():
-        
+
         st.subheader(f"{category_lable}")
         col_name = generate_col_name(category)
         # Get average for all members first
@@ -337,11 +353,14 @@ def display_coverage():
                 member_id = member_name_to_id(member_name)
                 params = MISSING_ITEM_URLS.get(category, None)
                 if params:
-                    path=f"members/{member_id}/works"
-                    params = {**params , **{'sample': 100, 'select':'DOI'}}     
-                    url = Request('GET',f"{API_URI}/{path}", params=params).prepare().url
-                    st.markdown(f"[Show sample DOIs that are missing {category}]({url})")
-                
+                    path = f"members/{member_id}/works"
+                    params = {**params, **{"sample": 100, "select": "DOI"}}
+                    url = (
+                        Request("GET", f"{API_URI}/{path}", params=params).prepare().url
+                    )
+                    st.markdown(
+                        f"[Show sample DOIs that are missing {category}]({url})"
+                    )
 
 
 def init_sidebar():
@@ -413,6 +432,3 @@ else:
     selected_member_ids = [
         member_name_to_id(member_name) for member_name in currently_selected_members()
     ]
-    foo = most_common_member_type_ids(selected_member_ids)
-
-    st.write(foo)
