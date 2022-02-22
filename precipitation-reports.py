@@ -1,5 +1,5 @@
 # -----------------------------------------------------------
-# Use streamlit to create a facimile of Crossref Partipation Reports
+# Use streamlit to create a facimile of Crossref Participation Reports
 # for use by Labs group.
 # Released under MIT license
 # email labs@crossref.org
@@ -413,7 +413,6 @@ def init_sidebar():
 
 
 ## Starts here
-
 
 content_types_df = load_content_types()
 summarized_members_df = create_member_list_df()
