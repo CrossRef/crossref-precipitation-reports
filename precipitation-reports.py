@@ -141,7 +141,8 @@ def update_selections():
 
     new_options = update_type_selector(selected_member_ids)
     index = 0
-    if previously_selected_type := currently_selected_type():
+    previously_selected_type = currently_selected_type()
+    if previously_selected_type:
         index = (
             new_options.index(previously_selected_type)
             if previously_selected_type in new_options
