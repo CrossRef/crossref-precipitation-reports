@@ -10,6 +10,7 @@ import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
 import arrow
+import shutil
 import streamlit as st
 from requests import Request, get
 from settings import (
@@ -38,42 +39,42 @@ def period_dates():
     return end_of_backfile_date, start_of_current_date
 
 
-@st.experimental_memo(max_entries=5)
+# @st.experimental_memo(max_entries=5)
 def load_content_types():
     return pd.read_parquet("data/types.parquet")
 
 
-@st.experimental_memo(max_entries=5)
+# @st.experimental_memo(max_entries=5)
 def load_instructions():
     """read markdown file of instructions"""
     with open("instructions.md") as f:
         return f.read()
 
 
-@st.experimental_memo(max_entries=5)
+# @st.experimental_memo(max_entries=5)
 def load_about():
     """read markdown file about this tool"""
     with open("about.md") as f:
         return f.read()
 
 
-@st.experimental_memo(max_entries=5)
+# @st.experimental_memo(max_entries=5)
 def create_journal_df():
     return pd.read_parquet("data/annotated_journals.parquet")
 
 
-@st.experimental_memo(max_entries=5)
+# @st.experimental_memo(max_entries=5)
 def create_member_list_df():
     return pd.read_parquet("data/annotated_members.parquet")
 
 
-@st.experimental_memo(max_entries=5)
+# @st.experimental_memo(max_entries=5)
 def name_list(summarized_members_df):
     # TODO from json instead of df?
     return summarized_members_df["primary-name"].unique().tolist()
 
 
-@st.experimental_memo(max_entries=5)
+# @st.experimental_memo(max_entries=5)
 def member_name_to_id(member_name):
     return int(
         summarized_members_df.loc[
@@ -82,12 +83,12 @@ def member_name_to_id(member_name):
     )
 
 
-@st.experimental_memo(max_entries=5)
+# @st.experimental_memo(max_entries=5)
 def type_id_to_label(type_id):
     return content_types_df.loc[content_types_df["id"] == type_id].iloc[0]["label"]
 
 
-@st.experimental_memo(max_entries=5)
+# @st.experimental_memo(max_entries=5)
 def type_label_to_id(type_label):
     return content_types_df.loc[content_types_df["label"] == type_label].iloc[0]["id"]
 
@@ -431,3 +432,10 @@ else:
     selected_member_ids = [
         member_name_to_id(member_name) for member_name in currently_selected_members()
     ]
+
+st.subheader("debug")
+total, used, free = shutil.disk_usage("/")
+
+st.write("Total: %d GiB" % (total // (2**30)))
+st.write("Used: %d GiB" % (used // (2**30)))
+st.write("Free: %d GiB" % (free // (2**30)))
