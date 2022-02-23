@@ -7,4 +7,6 @@
 - Add ability to link to a particular report by passing in paramters.
 - Last date of updates
 
-###
+### fly
+flyctl deploy .
+flyctl restart prep

@@ -92,6 +92,12 @@ def type_id_to_label(type_id):
 def type_label_to_id(type_label):
     return content_types_df.loc[content_types_df["label"] == type_label].iloc[0]["id"]
 
+def period_label_to_id(period_label):
+    return period_label.lower()
+
+def period_id_to_label(period_id):
+    return period_id.title()
+
 
 def update_type_selector(selected_member_ids):
     return [
@@ -131,22 +137,39 @@ def most_common_member_type_ids(selected_member_ids: list):
     }
 
 
-def currently_selected_members():
+def currently_selected_member_names():
     return st.session_state.member_names_multiselect
+def currently_selected_member_ids():
+    return [member_name_to_id(member_id) for member_id in currently_selected_member_names()]
 
-
-def currently_selected_type():
+def currently_selected_type_label():
     return st.session_state.content_type_selectbox_key
+def currently_selected_type_id():
+    return type_label_to_id(currently_selected_type_label())
 
+def currently_selected_period_label():
+    return st.session_state.period_selector
+def currenlty_selected_period_id():
+    return period_label_to_id(currently_selected_period_label())
+
+def showing_title_detail(state=False):
+    if state:
+        st.session_state.show_title_detail = state
+    return st.session_state.show_title_detail
+
+def showing_example_links(state=False):
+    if state:
+        st.session_state.show_example_links = state
+    return st.session_state.show_example_links
 
 def update_selections():
     selected_member_ids = [
-        member_name_to_id(name) for name in currently_selected_members()
+        member_name_to_id(name) for name in currently_selected_member_names()
     ]
 
     new_options = update_type_selector(selected_member_ids)
     index = 0
-    previously_selected_type = currently_selected_type()
+    previously_selected_type = currently_selected_type_label()
     if previously_selected_type:
         index = (
             new_options.index(previously_selected_type)
@@ -160,7 +183,7 @@ def update_selections():
 
 def generate_col_name(category):
     period = st.session_state.period_selector
-    content_type = currently_selected_type()
+    content_type = currently_selected_type_label()
     if not content_type:
         st.write("no type")
         return "id"
@@ -207,55 +230,42 @@ def render_gauge(label, stat):
         },
     )
 
+def val_for_member_id(member_id,col_name):
+    return summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
+        col_name
+    ]
 
 def date_joined(member_id):
-    return summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
-        "date-joined"
-    ]
+    return val_for_member_id(member_id,"date-joined")
 
 
 def member_type(member_id):
-    return summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
-        "member-type"
-    ]
+    return val_for_member_id(member_id,"member-type")
+    
 
 
 def annual_fee(member_id):
-    return summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
-        "annual-fee"
-    ]
+    return val_for_member_id(member_id,"annual-fee")
 
 
 def country_name(member_id):
-    return summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
-        "geonames-country-name"
-    ]
+    return val_for_member_id(member_id,"geonames-country-name")
 
 
 def current_dois(member_id):
-    return summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
-        "counts-current-dois"
-    ]
+    return val_for_member_id(member_id,"counts-current-dois")
 
 
 def backfile_dois(member_id):
-    return summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
-        "counts-backfile-dois"
-    ]
+    return val_for_member_id(member_id,"counts-backfile-dois")
 
 
 def total_dois(member_id):
-    return summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
-        "counts-total-dois"
-    ]
+    return val_for_member_id(member_id,"counts-total-dois" )
 
 
 def dois_by_issued_year(member_id):
-    val = json.loads(
-        summarized_members_df[summarized_members_df["id"].isin([member_id])].iloc[0][
-            "breakdowns-dois-by-issued-year"
-        ]
-    )
+    val = json.loads(val_for_member_id(member_id, "breakdowns-dois-by-issued-year"))
     return {"years": [item[0] for item in val], "counts": [item[1] for item in val]}
 
 
@@ -304,27 +314,27 @@ def title_details(member_name, category):
     return detail
 
 
-def show_sample(member_id, category):
-    st.write("Downloading sample")
+# def show_sample(member_id, category):
+#     st.write("Downloading sample")
 
 
-@st.experimental_memo
-def get_sample(member_id, category):
-    with st.spinner("Getting sample of non-conforming DOIs"):
-        path = f"members/{member_id}/works"
-        params = MISSING_ITEM_URLS.get(category, None)
-        if params:
-            params = params | {"sample": 100, "select": "DOI"}
-            res = get(f"{API_URI}/{path}", params=params, headers=HEADERS).json()
-            return json.dumps(res)
+# @st.experimental_memo
+# def get_sample(member_id, category):
+#     with st.spinner("Getting sample of non-conforming DOIs"):
+#         path = f"members/{member_id}/works"
+#         params = MISSING_ITEM_URLS.get(category, None)
+#         if params:
+#             params = params | {"sample": 100, "select": "DOI"}
+#             res = get(f"{API_URI}/{path}", params=params, headers=HEADERS).json()
+#             return json.dumps(res)
 
-    return None
+#     return None
 
 
 def display_coverage():
     st.header("Coverage")
     st.markdown(
-        f"**Content type:** {currently_selected_type()} / **Period:** {st.session_state.period_selector}"
+        f"**Content type:** {currently_selected_type_label()} / **Period:** {st.session_state.period_selector}"
     )
 
     for category, category_lable in COVERAGE_CATEGORIES.items():
@@ -342,7 +352,7 @@ def display_coverage():
 
             # title details
             if st.session_state.show_title_detail and type_label_to_id(
-                currently_selected_type()
+                currently_selected_type_label()
             ) in ["journal-article"]:
                 with st.expander(
                     label=f"{member_name} title-level details", expanded=False
@@ -366,6 +376,8 @@ def display_coverage():
 
 def init_sidebar():
 
+    restore_from_params()
+
     st.sidebar.image("https://assets.crossref.org/logo/crossref-logo-landscape-200.png")
 
     st.sidebar.header("Crossref Precipitation Reports")
@@ -382,7 +394,7 @@ def init_sidebar():
     )
 
     if "type_options" not in st.session_state:
-        # st.write("resseting type session state")
+        
         st.session_state.type_options = []
         st.session_state.type_index = 0
 
@@ -413,6 +425,19 @@ def init_sidebar():
     st.sidebar.markdown(load_instructions())
 
 
+def clear_params():
+    st.experimental_set_query_params()
+def update_params():
+    st.experimental_set_query_params(
+        member_ids=currently_selected_member_ids(),
+        period=currenlty_selected_period_id(),
+        content_type=currently_selected_type_id(),
+        show_title_detail=showing_title_detail(),
+        show_example_links=showing_example_links()
+    )
+def restore_from_params():
+    st.write(st.experimental_get_query_params())
+
 ## Starts here
 
 content_types_df = load_content_types()
@@ -424,14 +449,17 @@ init_sidebar()
 
 if len(st.session_state.member_names_multiselect) == 0:
     st.markdown(load_about())
+    clear_params()
 else:
+    
     display_overview()
     display_coverage()
+    update_params()
 
     # # Creating a list of member ids from the currently selected members.
-    selected_member_ids = [
-        member_name_to_id(member_name) for member_name in currently_selected_members()
-    ]
+    # selected_member_ids = [
+    #     member_name_to_id(member_name) for member_name in currently_selected_members()
+    # ]
 
 st.subheader("debug")
 total, used, free = shutil.disk_usage("/")
