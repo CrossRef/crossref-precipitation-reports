@@ -30,7 +30,6 @@ Every night. If there is demand, we can do this more frequently.
 
 Probably not. Streamlit is fantastic, but it doesn't give you fine-grained control over all UI elements.
 
-### I see that you are using dataframes and plotly in a very eccentric fasion. Are you an idiot?
+### I see that you are using dataframes and plotly in a very *cough* eccentric fashion. Are you an idiot?
 
 Indubitably.
-
