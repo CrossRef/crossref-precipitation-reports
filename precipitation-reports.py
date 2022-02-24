@@ -81,6 +81,8 @@ def member_name_to_id(member_name):
             summarized_members_df["primary-name"] == member_name
         ].iloc[0]["id"]
     )
+def member_id_to_name(member_id):
+    val_for_member_id(member_id,"primary-name")
 
 
 # @st.experimental_memo(max_entries=5)
@@ -99,9 +101,15 @@ def period_id_to_label(period_id):
     return period_id.title()
 
 
-def update_type_selector(selected_member_ids):
+def content_type_labels_for_member_ids(selected_member_ids):
     return [
         type_id_to_label(id)
+        for id in most_common_member_type_ids(selected_member_ids).keys()
+    ]
+
+def content_type_ids_for_member_ids(selected_member_ids):
+    return [
+        id
         for id in most_common_member_type_ids(selected_member_ids).keys()
     ]
 
@@ -139,8 +147,17 @@ def most_common_member_type_ids(selected_member_ids: list):
 
 def currently_selected_member_names():
     return st.session_state.member_names_multiselect
+    #return st.session_state.selected_member_names
+
 def currently_selected_member_ids():
+    #return member_names_to_member_ids(currently_selected_member_names())
     return [member_name_to_id(member_id) for member_id in currently_selected_member_names()]
+
+def member_ids_to_member_names(member_ids):
+    return [member_id_to_name(member_id) for member_id in member_ids]
+
+def member_names_to_member_ids(member_names):
+    return [member_name_to_id(member_name) for member_name in member_names]
 
 def currently_selected_type_label():
     return st.session_state.content_type_selectbox_key
@@ -163,11 +180,15 @@ def showing_example_links(state=False):
     return st.session_state.show_example_links
 
 def update_selections():
-    selected_member_ids = [
-        member_name_to_id(name) for name in currently_selected_member_names()
-    ]
-
-    new_options = update_type_selector(selected_member_ids)
+    # selected_member_ids = [
+    #     member_name_to_id(name) for name in currently_selected_member_names()
+    # ]
+    #new_options = update_type_selector(selected_member_ids)
+    st.session_state.selected_members_names=st.session_state.member_names_multiselect
+    
+    
+    new_options = content_type_labels_for_member_ids(currently_selected_member_ids())
+    
     index = 0
     previously_selected_type = currently_selected_type_label()
     if previously_selected_type:
@@ -376,27 +397,35 @@ def display_coverage():
 
 def init_sidebar():
 
-    restore_from_params()
 
     st.sidebar.image("https://assets.crossref.org/logo/crossref-logo-landscape-200.png")
 
     st.sidebar.header("Crossref Precipitation Reports")
+    
+    
 
     member_names = name_list(summarized_members_df)
 
+    if "selected_member_names" not in st.session_state:
+        st.session_state.selected_member_names = []
+
+
     st.sidebar.multiselect(
         "Who are your favorite Crossref members?",
-        member_names,
-        [],
+        options=member_names,
+        default=st.session_state.selected_member_names,
         key="member_names_multiselect",
         on_change=update_selections,
         help="Type in the member name or initials (e.g. OUP, ACM, IEEE)",
     )
+    # st.sidebar.multiselect()
 
     if "type_options" not in st.session_state:
         
         st.session_state.type_options = []
         st.session_state.type_index = 0
+
+    
 
     st.sidebar.selectbox(
         "Content type",
@@ -405,6 +434,7 @@ def init_sidebar():
         key="content_type_selectbox_key",
         help="Select the content type you want to focus on",
     )
+
 
     if "selected_period" not in st.session_state:
         st.session_state.selected_period = ["All", "Current", "Backfile"]
@@ -435,8 +465,50 @@ def update_params():
         show_title_detail=showing_title_detail(),
         show_example_links=showing_example_links()
     )
+
+def restore_member_selector(params):
+    if "selected_member_names" not in st.session_state:
+        st.session_state.selected_member_names = []
+    if "member_ids" in params:
+        member_ids = [int(member_id) for member_id in params['member_ids']]
+        selected_member_names = [val_for_member_id(member_id,"primary-name") for member_id in member_ids]
+        st.session_state.selected_member_names = selected_member_names
+    
+    
+
+def restore_content_type_selector(params):
+
+    if "content_type" in params:
+        st.write("restoring content type selector")
+        selected_content_type = params["content_type"]
+        # st.write(f"Currently selected type id: {selected_content_type}")
+        st.write(f"Currently selected type name: {type_id_to_label(selected_content_type[0])}")
+        # st.write(f"Currently selected members: {st.session_state.selected_member_names}")
+        member_ids = member_names_to_member_ids(st.session_state.selected_member_names)
+        st.write(member_ids)
+        content_type_labels = content_type_labels_for_member_ids(member_ids)
+        st.session_state.type_options = content_type_labels
+
+        
+        #update_selections()
+
+
+            # need to find the index for content type in the current list of content types for the member
+       
+
+
 def restore_from_params():
-    st.write(st.experimental_get_query_params())
+    params = st.experimental_get_query_params()
+    if params:
+        st.write("Restoring from params")
+        restore_member_selector(params)
+        restore_content_type_selector(params)
+    else:
+        st.write("No params")
+    
+    
+    
+
 
 ## Starts here
 
@@ -444,8 +516,9 @@ content_types_df = load_content_types()
 summarized_members_df = create_member_list_df()
 journals_df = create_journal_df()
 
-
+#restore_from_params()
 init_sidebar()
+
 
 if len(st.session_state.member_names_multiselect) == 0:
     st.markdown(load_about())
@@ -454,16 +527,17 @@ else:
     
     display_overview()
     display_coverage()
-    update_params()
 
-    # # Creating a list of member ids from the currently selected members.
-    # selected_member_ids = [
-    #     member_name_to_id(member_name) for member_name in currently_selected_members()
-    # ]
+    if not st.experimental_get_query_params():
+        update_params()
 
-st.subheader("debug")
-total, used, free = shutil.disk_usage("/")
+    
 
-st.write("Total: %d GiB" % (total // (2**30)))
-st.write("Used: %d GiB" % (used // (2**30)))
-st.write("Free: %d GiB" % (free // (2**30)))
+with st.expander("debug"):
+    total, used, free = shutil.disk_usage("/")
+
+    st.write("Total: %d GiB" % (total // (2**30)))
+    st.write("Used: %d GiB" % (used // (2**30)))
+    st.write("Free: %d GiB" % (free // (2**30)))
+
+
