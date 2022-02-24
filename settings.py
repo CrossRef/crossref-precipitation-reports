@@ -22,6 +22,8 @@ COVERAGE_CATEGORIES = {
     "update-policies": "Crossmark enabled",
 }
 
+PERIODS = ["All", "Current", "Backfile"]
+
 API_URI = "https://api.crossref.org"
 
 COUNTS_COL_PREFIX = 'counts-type-all'
