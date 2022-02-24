@@ -6,6 +6,7 @@
 # -----------------------------------------------------------
 
 import json
+import logging
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -24,6 +25,10 @@ from settings import (
 )
 from missing_items_urls import MISSING_ITEM_URLS
 
+logging.basicConfig(level=logging.WARNING)
+logger = logging.getLogger()
+
+logger.info("Starting")
 
 def period_dates():
     start_of_this_year = arrow.utcnow().floor("year")
@@ -91,7 +96,12 @@ def member_id_to_name(member_id):
 
 # @st.experimental_memo(max_entries=5)
 def type_id_to_label(type_id):
-    return content_types_df.loc[content_types_df["id"] == type_id].iloc[0]["label"]
+    try:
+        return content_types_df.loc[content_types_df["id"] == type_id].iloc[0]["label"]
+    except IndexError as e:
+        logger.warning(f"Type error with {type_id}")
+        return None
+        #raise e from e
 
 
 # @st.experimental_memo(max_entries=5)
@@ -179,6 +189,7 @@ def currently_selected_type_id():
 
 
 def currently_selected_period_label():
+    ## here
     return st.session_state.period_selector
 
 
@@ -453,6 +464,8 @@ def display_coverage():
 
 def init_sidebar():
 
+    logger.info("init sidebar")
+
     st.sidebar.image("https://assets.crossref.org/logo/crossref-logo-landscape-200.png")
 
     st.sidebar.header("Crossref Precipitation Reports")
@@ -476,6 +489,10 @@ def init_sidebar():
 
         st.session_state.type_options = []
         st.session_state.type_index = 0
+    
+    # if "content_type_parameter" in st.session_state:
+    #     st.session_state.type_options = [st.session_state.content_type_parameter]
+    #     st.session_state.type_index = 0
 
     st.sidebar.selectbox(
         "Content type",
@@ -487,12 +504,15 @@ def init_sidebar():
 
     if "selected_period" not in st.session_state:
         st.session_state.selected_period = PERIODS
+        st.session_state.period_index = 0
 
     end_of_backfile, start_of_curent = period_dates()
     period_help_text = f"backfile <= {end_of_backfile} / current >= {start_of_curent}"
+
     st.sidebar.selectbox(
         "Period",
         options=st.session_state.selected_period,
+        index=st.session_state.period_index,
         key="period_selector",
         help=period_help_text,
     )
@@ -510,53 +530,57 @@ def clear_params():
 
 def update_params():
     st.experimental_set_query_params(
-        member_ids=currently_selected_member_ids(),
-        period=currenlty_selected_period_id(),
-        content_type=currently_selected_type_id(),
-        show_title_detail=showing_title_detail(),
-        show_example_links=showing_example_links(),
+        **{
+        'member-ids':currently_selected_member_ids(),
+        'period': currenlty_selected_period_id(),
+        'content-type':currently_selected_type_id(),
+        'show-title-detail':showing_title_detail(),
+        'show-example-links':showing_example_links(),
+        }
     )
 
 
 def restore_member_selector(params):
     if "selected_member_names" not in st.session_state:
         st.session_state.selected_member_names = []
-    if "member_ids" in params:
-        member_ids = [int(member_id) for member_id in params["member_ids"]]
+    if "member-ids" in params:
+        member_ids = [int(member_id) for member_id in params["member-ids"]]
         selected_member_names = [
             val_for_member_id(member_id, "primary-name") for member_id in member_ids
         ]
         st.session_state.selected_member_names = selected_member_names
+        if 'content-type' in params:
+            restore_content_type_selector(params["content-type"], member_ids)
+        if 'period' in params:
+            restore_period_selector(params['period'])
 
 
-def restore_content_type_selector(params):
-
-    if "content_type" in params:
-        st.write("restoring content type selector")
-        selected_content_type = params["content_type"]
-        # st.write(f"Currently selected type id: {selected_content_type}")
-        st.write(
-            f"Currently selected type name: {type_id_to_label(selected_content_type[0])}"
-        )
-        # st.write(f"Currently selected members: {st.session_state.selected_member_names}")
-        member_ids = member_names_to_member_ids(st.session_state.selected_member_names)
-        st.write(member_ids)
-        content_type_labels = content_type_labels_for_member_ids(member_ids)
-        st.session_state.type_options = content_type_labels
-
-        # update_selections()
-
-        # need to find the index for content type in the current list of content types for the member
+def restore_content_type_selector(content_type_param, member_ids):
+    content_type_id_selected = list(content_type_param)[0]
+    content_type_label_selected = type_id_to_label(content_type_id_selected)
+    st.session_state.type_options = content_type_labels_for_member_ids(member_ids)
+    if content_type_label_selected in st.session_state.type_options:
+        st.session_state.type_index = st.session_state.type_options.index(content_type_label_selected)
+    else:
+        st.session_state.type_index = 0
+def restore_period_selector(period_param):
+    period_param_id = list(period_param)[0]
+    period_param_label=period_id_to_label(period_param_id)
+    if period_param_label in PERIODS:
+        st.session_state.selected_period = PERIODS
+        st.session_state.period_index = PERIODS.index(period_param_label)
+    else:
+        st.session_state.period_index = 0
+   
 
 
 def restore_from_params():
     params = st.experimental_get_query_params()
     if params:
-        st.write("Restoring from params")
+        logger.info("Restoring from params")
         restore_member_selector(params)
-        restore_content_type_selector(params)
     else:
-        st.write("No params")
+        logger.info("No params given")
 
 
 ## Starts here
@@ -565,7 +589,13 @@ content_types_df = load_content_types()
 summarized_members_df = create_member_list_df()
 journals_df = create_journal_df()
 
-# restore_from_params()
+if "first_run" in st.session_state:
+    logger.info("continuing session")
+else:
+    logger.info("starting new session")
+    st.session_state.first_run = True
+    restore_from_params()
+
 init_sidebar()
 
 
@@ -573,12 +603,9 @@ if len(st.session_state.member_names_multiselect) == 0:
     st.markdown(load_about())
     clear_params()
 else:
-
     display_overview()
     display_coverage()
-
-    if not st.experimental_get_query_params():
-        update_params()
+    update_params()
 
 
 with st.expander("debug"):
