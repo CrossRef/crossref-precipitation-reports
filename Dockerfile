@@ -5,7 +5,13 @@ WORKDIR /code
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
-
+RUN apt install curl
+RUN curl -sSL "https://gitlab.com/crossref/api-summaries/-/jobs/artifacts/main/download?job=annotate" -o artifacts.zip
+RUN unzip artifacts.zip
+RUN rm data/*.json
+RUN rm data/*.db
+RUN rm data/*.csv
+RUN ls data/
 COPY requirements.txt requirements.txt
 RUN pip install --upgrade pip
 RUN pip install -r requirements.txt

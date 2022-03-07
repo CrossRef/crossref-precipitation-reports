@@ -24,7 +24,7 @@ We're glad you asked. The [source is available in GitLab](https://gitlab.com/cro
 
 ### How often is the data updated?
 
-Every night. If there is demand, we can do this more frequently.
+Every night. If there is demand, we can do this more frequently. The last time the data was updated in noted at the top of the sidebar.
 
 ### Can you move the widgets 12 pixels to the right?
 

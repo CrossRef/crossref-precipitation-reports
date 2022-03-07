@@ -7,6 +7,7 @@
 
 import json
 import logging
+import os
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -51,6 +52,7 @@ def load_content_types():
     return pd.read_parquet("data/types.parquet")
 
 
+
 # @st.experimental_memo(max_entries=5)
 def load_instructions():
     """read markdown file of instructions"""
@@ -73,6 +75,13 @@ def create_journal_df():
 # @st.experimental_memo(max_entries=5)
 def create_member_list_df():
     return pd.read_parquet("data/annotated_members.parquet")
+
+def data_last_updated():
+    date_created = os.path.getctime("data/annotated_members.parquet")
+    date = arrow.Arrow.fromtimestamp(date_created)
+    return date.humanize()
+
+
 
 
 # @st.experimental_memo(max_entries=5)
@@ -469,6 +478,8 @@ def init_sidebar():
     st.sidebar.image("https://assets.crossref.org/logo/crossref-logo-landscape-200.png")
 
     st.sidebar.header("Crossref Precipitation Reports")
+    st.sidebar.write(f"(data last updated {data_last_updated()})")
+
 
     member_names = name_list(summarized_members_df)
 
@@ -520,6 +531,7 @@ def init_sidebar():
     with st.sidebar.expander(label="Preferences"):
         st.checkbox(label="Show title detail", key="show_title_detail")
         st.checkbox(label="Show example links", key="show_example_links")
+    
 
     st.sidebar.markdown(load_instructions())
 
