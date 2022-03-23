@@ -492,7 +492,7 @@ def init_sidebar():
         default=st.session_state.selected_member_names,
         key="member_names_multiselect",
         on_change=update_selections,
-        help="Type in the member name or initials (e.g. OUP, ACM, IEEE)",
+        help="Type in the member name or initials (e.g. eLife, Wiley, PLOS, IEEE)",
     )
     # st.sidebar.multiselect()
 
@@ -532,8 +532,8 @@ def init_sidebar():
         st.checkbox(label="Show title detail", key="show_title_detail")
         st.checkbox(label="Show example links", key="show_example_links")
     
-
-    st.sidebar.markdown(load_instructions())
+    with st.sidebar.expander(label="Instructions"):
+        st.markdown(load_instructions())
 
 
 def clear_params():

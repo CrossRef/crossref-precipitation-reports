@@ -6,3 +6,5 @@ textColor="#4f5858"
 [server]
 maxUploadSize = 200
 maxMessageSize = 200
+
+

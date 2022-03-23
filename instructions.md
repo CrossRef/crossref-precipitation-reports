@@ -1,4 +1,4 @@
-## Instructions
+### How to use it
 
 
 - Select one or more of your favorite Crossref members.
@@ -8,8 +8,10 @@
 
 ### A few tips
 
-A few tips:
-
 - You can select multiple members and compare them.
 - You will see "+" symbols scattered around the page. These expand to show more detail.
 - When you are looking at detail in a table, you can click on the header of a column to sort by that column.
+
+### Help us make it better
+
+Please [create a new issue](https://gitlab.com/crossref/crossref-precipitation-reports/-/issues) to make suggestions or report problems.
