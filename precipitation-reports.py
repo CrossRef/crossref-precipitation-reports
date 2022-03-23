@@ -477,7 +477,7 @@ def init_sidebar():
 
     st.sidebar.image("https://assets.crossref.org/logo/crossref-logo-landscape-200.png")
 
-    st.sidebar.header("Crossref Precipitation Reports")
+    st.sidebar.header("Crossref Labs Reports")
     st.sidebar.write(f"(data last updated {data_last_updated()})")
 
 

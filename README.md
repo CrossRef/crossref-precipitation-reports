@@ -1,3 +1,5 @@
-# Crossref Precipitation Reports
+# Crossref Labs Reports
 
-It's raining metadata, halleluja!
+A [Crossref Labs's](https://labs.crossref.org) reporting tool.
+
+[Live version](https://prep.labs.crossref.org/)

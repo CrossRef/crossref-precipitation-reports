@@ -1,7 +1,7 @@
-## Crossref Precipitation  Reports
 
-It's raining metadata! Hallelujah!
+## Crossref Labs Reports
 
+![Image](https://crossref.org/img/labs/creature1.svg)
 ### Warnings, Caveats and Weasel Words
 
 This is a [Crossref Labs](https://www.crossref.org/labs/) version of our production [Particpation reports](https://www.crossref.org/members/prep/).
