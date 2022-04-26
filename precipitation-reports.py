@@ -8,6 +8,7 @@
 import json
 import logging
 import os
+from collections import Counter
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -108,15 +109,18 @@ def type_id_to_label(type_id):
     try:
         return content_types_df.loc[content_types_df["id"] == type_id].iloc[0]["label"]
     except IndexError as e:
-        logger.warning(f"Type error with {type_id}")
+        logger.warning(f"Type error with type_id: {type_id}")
         return None
         #raise e from e
 
 
 # @st.experimental_memo(max_entries=5)
 def type_label_to_id(type_label):
-    return content_types_df.loc[content_types_df["label"] == type_label].iloc[0]["id"]
-
+    try:
+        return content_types_df.loc[content_types_df["label"] == type_label].iloc[0]["id"]
+    except IndexError as e:
+        logger.warning(f"Type error with type_label: {type_label}")
+        return None
 
 def period_label_to_id(period_label):
     return period_label.lower()
@@ -153,12 +157,12 @@ def member_records(member_ids: list):
     return summarized_members_df[summarized_members_df["id"].isin(member_ids)]
 
 
-def count_col_to_type_id(count_col):
-    # return count_col.replace(f"{COUNTS_COL_PREFIX}-", "")
+def count_col_to_type_id(count_col: str) -> str:
+    """ take a flattened parquet column name and return the content type portion """
     return re.sub(r"counts-type-.*?-", "", count_col)
 
 
-def most_common_member_type_ids(selected_member_ids: list):
+def x_most_common_member_type_ids(selected_member_ids: list):
     return {
         count_col_to_type_id(k): v
         for k, v in {
@@ -167,6 +171,28 @@ def most_common_member_type_ids(selected_member_ids: list):
         }.items()
         if v > 0
     }
+def most_common_member_type_ids(selected_member_ids: list):
+    """ return dictionary mapping content-ids to counts for each selected member id """ 
+    all_counts =  {
+        count_col_to_type_id(k): v
+        for k, v in {
+            col_name: member_records(selected_member_ids)[col_name].max()
+            for col_name in count_type_cols()
+        }.items()
+        
+    }
+
+    if sum(all_counts.values()) == 0:   
+        logger.warning("!! No content, returning all content types")
+        return all_counts
+    
+    logger.debug("Returning only non-zero content types")
+
+    return {k: v for k, v in all_counts.items() if v > 0}
+
+
+
+    
 
 
 def currently_selected_member_names():
