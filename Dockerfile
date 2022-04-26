@@ -18,4 +18,4 @@ RUN pip install --upgrade pip
 RUN pip install -r requirements.txt
 EXPOSE 5000
 COPY . .
-CMD ["streamlit", "run","precipitation-reports.py"]g
+CMD ["streamlit", "run","labs-reports.py"]g

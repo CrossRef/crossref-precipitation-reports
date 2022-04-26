@@ -8,7 +8,6 @@
 import json
 import logging
 import os
-from collections import Counter
 import pandas as pd
 import plotly.express as px
 import plotly.graph_objects as go
@@ -19,7 +18,6 @@ import streamlit as st
 from requests import Request, get
 from settings import (
     API_URI,
-    COUNTS_COL_PREFIX,
     COVERAGE_CATEGORIES,
     CR_PRIMARY_COLORS,
     HEADERS,
@@ -31,6 +29,7 @@ logging.basicConfig(level=logging.WARNING)
 logger = logging.getLogger()
 
 logger.info("Starting")
+
 
 def period_dates():
     start_of_this_year = arrow.utcnow().floor("year")
@@ -51,7 +50,6 @@ def period_dates():
 # @st.experimental_memo(max_entries=5)
 def load_content_types():
     return pd.read_parquet("data/types.parquet")
-
 
 
 # @st.experimental_memo(max_entries=5)
@@ -77,12 +75,11 @@ def create_journal_df():
 def create_member_list_df():
     return pd.read_parquet("data/annotated_members.parquet")
 
+
 def data_last_updated():
     date_created = os.path.getctime("data/annotated_members.parquet")
     date = arrow.Arrow.fromtimestamp(date_created)
     return date.humanize()
-
-
 
 
 # @st.experimental_memo(max_entries=5)
@@ -100,8 +97,9 @@ def member_name_to_id(member_name):
     )
 
 
-def member_id_to_name(member_id):
-    val_for_member_id(member_id, "primary-name")
+# Vulture
+# def member_id_to_name(member_id):
+#     val_for_member_id(member_id, "primary-name")
 
 
 # @st.experimental_memo(max_entries=5)
@@ -111,16 +109,19 @@ def type_id_to_label(type_id):
     except IndexError as e:
         logger.warning(f"Type error with type_id: {type_id}")
         return None
-        #raise e from e
+        # raise e from e
 
 
 # @st.experimental_memo(max_entries=5)
 def type_label_to_id(type_label):
     try:
-        return content_types_df.loc[content_types_df["label"] == type_label].iloc[0]["id"]
+        return content_types_df.loc[content_types_df["label"] == type_label].iloc[0][
+            "id"
+        ]
     except IndexError as e:
         logger.warning(f"Type error with type_label: {type_label}")
         return None
+
 
 def period_label_to_id(period_label):
     return period_label.lower()
@@ -137,8 +138,9 @@ def content_type_labels_for_member_ids(selected_member_ids):
     ]
 
 
-def content_type_ids_for_member_ids(selected_member_ids):
-    return [id for id in most_common_member_type_ids(selected_member_ids).keys()]
+# Vulture
+# def content_type_ids_for_member_ids(selected_member_ids):
+#     return [id for id in most_common_member_type_ids(selected_member_ids).keys()]
 
 
 def filter_cols(filter):
@@ -158,41 +160,36 @@ def member_records(member_ids: list):
 
 
 def count_col_to_type_id(count_col: str) -> str:
-    """ take a flattened parquet column name and return the content type portion """
+    """take a flattened parquet column name and return the content type portion"""
     return re.sub(r"counts-type-.*?-", "", count_col)
 
 
-def x_most_common_member_type_ids(selected_member_ids: list):
-    return {
-        count_col_to_type_id(k): v
-        for k, v in {
-            col_name: member_records(selected_member_ids)[col_name].max()
-            for col_name in count_type_cols()
-        }.items()
-        if v > 0
-    }
+# def x_most_common_member_type_ids(selected_member_ids: list):
+#     return {
+#         count_col_to_type_id(k): v
+#         for k, v in {
+#             col_name: member_records(selected_member_ids)[col_name].max()
+#             for col_name in count_type_cols()
+#         }.items()
+#         if v > 0
+#     }
 def most_common_member_type_ids(selected_member_ids: list):
-    """ return dictionary mapping content-ids to counts for each selected member id """ 
-    all_counts =  {
+    """return dictionary mapping content-ids to counts for each selected member id"""
+    all_counts = {
         count_col_to_type_id(k): v
         for k, v in {
             col_name: member_records(selected_member_ids)[col_name].max()
             for col_name in count_type_cols()
         }.items()
-        
     }
 
-    if sum(all_counts.values()) == 0:   
+    if sum(all_counts.values()) == 0:
         logger.warning("!! No content, returning all content types")
         return all_counts
-    
+
     logger.debug("Returning only non-zero content types")
 
     return {k: v for k, v in all_counts.items() if v > 0}
-
-
-
-    
 
 
 def currently_selected_member_names():
@@ -207,12 +204,13 @@ def currently_selected_member_ids():
     ]
 
 
-def member_ids_to_member_names(member_ids):
-    return [member_id_to_name(member_id) for member_id in member_ids]
+# Vulture
+# def member_ids_to_member_names(member_ids):
+#     return [member_id_to_name(member_id) for member_id in member_ids]
 
-
-def member_names_to_member_ids(member_names):
-    return [member_name_to_id(member_name) for member_name in member_names]
+# Vulture
+# def member_names_to_member_ids(member_names):
+#     return [member_name_to_id(member_name) for member_name in member_names]
 
 
 def currently_selected_type_label():
@@ -249,7 +247,9 @@ def update_selections():
     #     member_name_to_id(name) for name in currently_selected_member_names()
     # ]
     # new_options = update_type_selector(selected_member_ids)
-    st.session_state.selected_members_names = st.session_state.member_names_multiselect
+
+    # Vulture
+    # st.session_state.selected_members_names = st.session_state.member_names_multiselect
 
     new_options = content_type_labels_for_member_ids(currently_selected_member_ids())
 
@@ -490,7 +490,11 @@ def display_coverage():
                     path = f"members/{member_id}/works"
                     params = {**params, **{"sample": 100, "select": "DOI"}}
                     url = (
-                        Request("GET", f"{API_URI}/{path}", params=params).prepare().url
+                        Request(
+                            "GET", f"{API_URI}/{path}", params=params, headers=HEADERS
+                        )
+                        .prepare()
+                        .url
                     )
                     st.markdown(
                         f"[Show sample DOIs that are missing {category}]({url})"
@@ -505,7 +509,6 @@ def init_sidebar():
 
     st.sidebar.header("Crossref Labs Reports")
     st.sidebar.write(f"(data last updated {data_last_updated()})")
-
 
     member_names = name_list(summarized_members_df)
 
@@ -526,7 +529,7 @@ def init_sidebar():
 
         st.session_state.type_options = []
         st.session_state.type_index = 0
-    
+
     # if "content_type_parameter" in st.session_state:
     #     st.session_state.type_options = [st.session_state.content_type_parameter]
     #     st.session_state.type_index = 0
@@ -557,7 +560,7 @@ def init_sidebar():
     with st.sidebar.expander(label="Preferences"):
         st.checkbox(label="Show title detail", key="show_title_detail")
         st.checkbox(label="Show example links", key="show_example_links")
-    
+
     with st.sidebar.expander(label="Instructions"):
         st.markdown(load_instructions())
 
@@ -569,11 +572,11 @@ def clear_params():
 def update_params():
     st.experimental_set_query_params(
         **{
-        'member-ids':currently_selected_member_ids(),
-        'period': currenlty_selected_period_id(),
-        'content-type':currently_selected_type_id(),
-        'show-title-detail':showing_title_detail(),
-        'show-example-links':showing_example_links(),
+            "member-ids": currently_selected_member_ids(),
+            "period": currenlty_selected_period_id(),
+            "content-type": currently_selected_type_id(),
+            "show-title-detail": showing_title_detail(),
+            "show-example-links": showing_example_links(),
         }
     )
 
@@ -587,10 +590,10 @@ def restore_member_selector(params):
             val_for_member_id(member_id, "primary-name") for member_id in member_ids
         ]
         st.session_state.selected_member_names = selected_member_names
-        if 'content-type' in params:
+        if "content-type" in params:
             restore_content_type_selector(params["content-type"], member_ids)
-        if 'period' in params:
-            restore_period_selector(params['period'])
+        if "period" in params:
+            restore_period_selector(params["period"])
 
 
 def restore_content_type_selector(content_type_param, member_ids):
@@ -598,18 +601,21 @@ def restore_content_type_selector(content_type_param, member_ids):
     content_type_label_selected = type_id_to_label(content_type_id_selected)
     st.session_state.type_options = content_type_labels_for_member_ids(member_ids)
     if content_type_label_selected in st.session_state.type_options:
-        st.session_state.type_index = st.session_state.type_options.index(content_type_label_selected)
+        st.session_state.type_index = st.session_state.type_options.index(
+            content_type_label_selected
+        )
     else:
         st.session_state.type_index = 0
+
+
 def restore_period_selector(period_param):
     period_param_id = list(period_param)[0]
-    period_param_label=period_id_to_label(period_param_id)
+    period_param_label = period_id_to_label(period_param_id)
     if period_param_label in PERIODS:
         st.session_state.selected_period = PERIODS
         st.session_state.period_index = PERIODS.index(period_param_label)
     else:
         st.session_state.period_index = 0
-   
 
 
 def restore_from_params():

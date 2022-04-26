@@ -12,7 +12,7 @@ Trust it as you would a scorpoion sitting on your nose.
 
 ### Why have we done this?
 
-Because the Crossref Labs keeps gathering new and interesting data that we want to share with our community. Having a place where we can put data from our experiments makes this easier.
+Because Crossref Labs keeps gathering new and interesting data that we want to share with our community. Having a place where we can put data from our experiments makes this easier.
 
 This will also allow us to prototype things that may make it into Participation Reports.
 
@@ -24,12 +24,12 @@ We're glad you asked. The [source is available in GitLab](https://gitlab.com/cro
 
 ### How often is the data updated?
 
-Every night. If there is demand, we can do this more frequently. The last time the data was updated in noted at the top of the sidebar.
+When we feel like it. If there is demand, we can do this more automatically, and more frequently. The last time the data was updated in noted at the top of the sidebar.
 
 ### Can you move the widgets 12 pixels to the right?
 
 Probably not. Streamlit is fantastic, but it doesn't give you fine-grained control over all UI elements.
 
-### I see that you are using dataframes and plotly in a very *cough* eccentric fashion. Are you an idiot?
+### I see that you are using dataframes and plotly in an *cough* eccentric fashion. Are you an idiot?
 
 Indubitably.
