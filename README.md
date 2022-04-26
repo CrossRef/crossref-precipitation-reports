@@ -1,5 +1,10 @@
-# Crossref Labs Reports
+# Crossref "Precipitation Reports" has been renamed and moved
 
-A [Crossref Labs's](https://labs.crossref.org) reporting tool.
+Why?
 
-[Live version](https://prep.labs.crossref.org/)
+Because it was a dumb and confusing name.
+
+It is now be found at [Crossref Labs Reports](https://gitlab.com/crossref/crossref-labs-reports)
+
+The [Live version](https://prep.labs.crossref.org/) has not changed.
+
